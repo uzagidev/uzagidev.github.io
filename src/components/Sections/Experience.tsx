@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// import { cn } from "../../utils/cn";
-
-import { motion } from "framer-motion";
+import { isMobile } from "react-device-detect";
+import { m } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { MoveIcon } from "../Icons/MoveIcon";
+import { FlipWords } from "../ui/flip-word";
 // import * as data from "../../data/position.json";
 
 type Position = {
@@ -17,7 +17,7 @@ type ExpItem = {
   y: number;
 };
 
-const exps = [
+const exps: ExpItem[] = [
   {
     title: "html",
     icon: "html.png",
@@ -114,6 +114,7 @@ const Experience = () => {
   const [position, setPosition] = useState<Position[]>(
     exps.map((e) => ({ x: e.x, y: e.y }))
   );
+  // const [count, setCount] = useState(0);
   const boxRef = useRef<HTMLDivElement>(null);
   // const getData = () => {
   //   const items = data.layers.map((e) => ({
@@ -126,11 +127,13 @@ const Experience = () => {
   const calcPosition = useCallback((): Position[] => {
     const box = boxRef.current;
     if (!box) return [];
-    const minSize = Math.min(window.innerWidth, window.innerHeight, 720) * 0.75;
+    const minSize = Math.min(window.innerWidth, window.innerHeight, 720) * 0.8;
     const width = box.offsetWidth;
     const scaleRatio = width / 480;
     box.style.width = `${minSize}px`;
     box.style.height = `${minSize}px`;
+    box.style.maxWidth = `${minSize}px`;
+    box.style.maxHeight = `${minSize}px`;
     // const items = getData();
     // const t = items.map((e) => ({
     //   x: e.x * scaleRatio,
@@ -148,6 +151,7 @@ const Experience = () => {
       x: e.x * scaleRatio,
       y: e.y * scaleRatio,
     }));
+    // setCount((c) => c + 1);
 
     return calculatedPosition;
   }, []);
@@ -155,42 +159,51 @@ const Experience = () => {
   useEffect(() => {
     const gdata = calcPosition();
     setPosition(gdata);
-
-    window.addEventListener("resize", calcPosition);
-
-    return () => {
-      window.removeEventListener("resize", calcPosition);
-    };
   }, [calcPosition]);
 
   return (
-    <div id="exp" className="h-screen">
-      <div className="container relative h-full p-6 mx-auto">
-        <h1 className="text-5xl font-bold text-white text-center">
-          Experience
-        </h1>
-        <div className="my-4">
-          <p className="text-gray-400 text-center">
+    <div id="exp" className="h-screen overflow-hidden">
+      <div className="container relative h-full py-6 mx-auto">
+        <div className="text-center">
+          <h1 className="text-2xl md:text-5xl font-bold text-white">
+            Experience
+          </h1>
+          <div className="text-gray-200 mt-4 mb-2">
+            I use the following technologies to develop{" "}
+            <FlipWords
+              words={["website", "application"]}
+              wordsClassName={["bg-orange-600", "bg-lime-600"]}
+              duration={2000}
+              className="p-1 font-bold w-[124px] text-center"
+            />
+          </div>
+          <p className="text-gray-400">
+            <MoveIcon className="inline mr-1" />
             Try to drag and throw the icons
           </p>
+          {/* <p className="text-gray-400">{count}</p> */}
         </div>
         <div className="h-3/4 mt-16 mx-auto relative" ref={boxRef}>
           {exps.map((item, index) => (
-            <motion.div
+            <m.div
               key={item.title}
-              className="w-16 h-16 flex justify-center items-center bg-rose-200/20 hover:bg-lime-200/20 backdrop-blur-sm p-4 rounded-full drop-shadow-[0_0_15px_rgba(255,69,231,1)] box-shadow-[0_0_24px_rgba(103,69,231,1)] hover:drop-shadow-[0_0_15px_rgba(83,255,97,1)] hover:box-shadow-[0_0_24px_rgba(83,255,97,1)] absolute -translate-x-1/2 -translate-y-1/2 cursor-grab"
+              className="w-14 h-14 md:w-16 md:h-16 flex justify-center items-center bg-rose-200/20 hover:bg-lime-200/20 p-4 rounded-full drop-shadow-[0_0_15px_rgba(255,69,231,1)] box-shadow-[0_0_24px_rgba(103,69,231,1)] hover:drop-shadow-[0_0_15px_rgba(83,255,97,1)] hover:box-shadow-[0_0_24px_rgba(83,255,97,1)] absolute -translate-x-1/4 -translate-y-1/4 cursor-grab"
               style={{
                 left: `${position[index].x}px`,
                 top: `${position[index].y}px`,
                 // transform: `translate(${p[index].x}px, ${p[index].y}px)`,
               }}
-              drag
+              drag={true}
               dragConstraints={boxRef}
               // onDragEnd={(_, info) => console.log(info.point.x, info.point.y)}
-              whileInView={{
-                x: [0.25, 0, -0.25],
-                y: [2, 0, -2],
-              }}
+              animate={
+                isMobile
+                  ? undefined
+                  : {
+                      x: [0.25, 0, -0.25],
+                      y: [2, 0, -2],
+                    }
+              }
               transition={{
                 type: "tween",
                 duration: 0.5,
@@ -200,14 +213,13 @@ const Experience = () => {
                 staggerChildren: 0.5,
               }}
             >
-              <motion.img
+              <m.img
                 src={`/images/sm/${item.icon}`}
                 alt={item.title}
                 className="w-16 select-none"
                 title={item.title}
                 draggable="false"
                 whileHover={{
-                  // scale: 1.2,
                   rotate: [10, 0, -10],
                   transition: {
                     type: "tween",
@@ -218,7 +230,7 @@ const Experience = () => {
                 }}
                 whileTap={{ scale: 1.2 }}
               />
-            </motion.div>
+            </m.div>
           ))}
         </div>
       </div>
